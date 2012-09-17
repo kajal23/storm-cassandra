@@ -90,7 +90,7 @@ Install and run [Apache Cassandra](http://cassandra.apache.org/).
 Create the sample schema using `cassandra-cli`:
 
 		$ cd schema
-		$ cassandra-cli -h localhost -f cassandra_schema.txt
+		$ cat cassandra_schema.txt | cassandra-cli -h localhost
 
 ## Running the Cassandra Reach Topology
 
