@@ -13,7 +13,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Tuple;
 
 @SuppressWarnings("serial")
-public abstract class CassandraBolt implements Serializable {
+public abstract class CassandraBolt<T> implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(CassandraBolt.class);
     public static String CASSANDRA_HOST = "cassandra.host";
     public static final String CASSANDRA_KEYSPACE = "cassandra.keyspace";
@@ -22,12 +22,19 @@ public abstract class CassandraBolt implements Serializable {
     
     private String cassandraHost;
     private String cassandraKeyspace;
-    protected TupleMapper tupleMapper;
-    protected CassandraClient cassandraClient;
+    private Class columnNameClass;
+    protected TupleMapper<T> tupleMapper;
+    protected CassandraClient<T> cassandraClient;
+   
 //    protected AstyanaxContext<Keyspace> astyanaxContext;
 
-    public CassandraBolt(TupleMapper tupleMapper) {
+    public CassandraBolt(TupleMapper<T> tupleMapper, Class columnNameClass) {        
         this.tupleMapper = tupleMapper;
+        this.columnNameClass = columnNameClass;
+    }
+    
+    public CassandraBolt(TupleMapper<T> tupleMapper) {
+        this(tupleMapper, String.class);
     }
 
     @SuppressWarnings("rawtypes")
@@ -37,15 +44,16 @@ public abstract class CassandraBolt implements Serializable {
         initCassandraConnection(stormConf);
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void initCassandraConnection(Map conf) {
         try {
             String clazz = (String)conf.get(CASSANDRA_CLIENT_CLASS);
             if(clazz == null){
-                clazz = "backtype.storm.contrib.cassandra.client.HectorClient";
+                clazz = "backtype.storm.contrib.cassandra.client.hector.HectorClient";
             }
             Class cl = Class.forName(clazz);
-            this.cassandraClient = (CassandraClient)cl.newInstance();
+            this.cassandraClient = (CassandraClient<T>) cl.newInstance();
+            cassandraClient.setColumnNameClass(this.columnNameClass);
             this.cassandraClient.start(this.cassandraHost, this.cassandraKeyspace);
         } catch (Throwable e) {
             LOG.warn("Preparation failed.", e);

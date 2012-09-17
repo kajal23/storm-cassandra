@@ -27,6 +27,8 @@ import com.netflix.astyanax.serializers.StringSerializer;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 
 import backtype.storm.Config;
+import backtype.storm.contrib.cassandra.bolt.mapper.DefaultTupleMapper;
+import backtype.storm.contrib.cassandra.bolt.mapper.TupleMapper;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
@@ -84,7 +86,8 @@ public class CassandraBoltTest {
 
     @Test
     public void testBolt() throws Exception {
-        CassandraBatchingBolt bolt = new CassandraBatchingBolt("users", "VALUE");
+        TupleMapper<String> tupleMapper = new DefaultTupleMapper("users", "VALUE");
+        CassandraBatchingBolt<String> bolt = new CassandraBatchingBolt<String>(tupleMapper);
         TopologyBuilder builder = new TopologyBuilder();
         builder.setBolt("TEST_BOLT", bolt);
 

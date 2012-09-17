@@ -24,9 +24,15 @@
 	</properties>
 	<dependencies>
 		<dependency>
-			<groupId>com.github.ptgoetz</groupId>
+			<groupId>com.hmsonline</groupId>
 			<artifactId>storm-cassandra</artifactId>
 			<version>0.3.1-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>guava</artifactId>
+					<groupId>com.google.guava</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>storm</groupId>
@@ -34,12 +40,14 @@
 			<version>${storm.version}</version>
 			<!-- keep storm out of the jar-with-dependencies -->
 			<scope>provided</scope>
+			<!-- 
 			<exclusions>
 				<exclusion>
 					<artifactId>guava</artifactId>
 					<groupId>com.google.guava</groupId>
 				</exclusion>
 			</exclusions>
+			 -->
 		</dependency>
 	</dependencies>
 	<build>

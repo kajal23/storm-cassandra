@@ -25,7 +25,6 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-@SuppressWarnings("deprecation")
 public class CassandraReachTopology {
 
     public static void main(String[] args) throws Exception {
@@ -43,13 +42,13 @@ public class CassandraReachTopology {
         DefaultTupleMapper tweetersTupleMapper = new DefaultTupleMapper("tweeters", "url");
         // cf (url -> tweeters) -> emit(url, follower)
         ValuelessColumnsMapper tweetersColumnsMapper = new ValuelessColumnsMapper("url", "tweeter", true);
-        CassandraLookupBolt tweetersBolt = new CassandraLookupBolt(tweetersTupleMapper, tweetersColumnsMapper);
+        CassandraLookupBolt<String> tweetersBolt = new CassandraLookupBolt<String>(tweetersTupleMapper, tweetersColumnsMapper);
 
         // cf = "followers", rowkey = tuple["tweeter"]
         DefaultTupleMapper followersTupleMapper = new DefaultTupleMapper("followers", "tweeter");
         // cf (tweeter -> followers) ==> emit(url, follower)
         ValuelessColumnsMapper followersColumnsMapper = new ValuelessColumnsMapper("url", "follower", true);
-        CassandraLookupBolt followersBolt = new CassandraLookupBolt(followersTupleMapper, followersColumnsMapper);
+        CassandraLookupBolt<String> followersBolt = new CassandraLookupBolt<String>(followersTupleMapper, followersColumnsMapper);
 
         builder.addBolt(new InitBolt());
         builder.addBolt(tweetersBolt).shuffleGrouping();

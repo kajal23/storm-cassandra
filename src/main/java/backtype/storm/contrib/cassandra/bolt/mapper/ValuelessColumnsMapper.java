@@ -2,8 +2,8 @@ package backtype.storm.contrib.cassandra.bolt.mapper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
@@ -56,7 +56,7 @@ import backtype.storm.tuple.Values;
  * @author boneill42
  */
 @SuppressWarnings("serial")
-public class ValuelessColumnsMapper implements ColumnsMapper, Serializable {
+public class ValuelessColumnsMapper implements ColumnsMapper<String>, Serializable {
     private String emitFieldForRowKey;
     private String emitFieldForColumnName;
     private boolean isDrpc;
@@ -99,16 +99,17 @@ public class ValuelessColumnsMapper implements ColumnsMapper, Serializable {
      * @return
      */
     @Override
-    public List<Values> mapToValues(String rowKey, Map<String, String> columns, Tuple input) {
+    public List<Values> mapToValues(String rowKey, Columns<String> columns, Tuple input) {
         List<Values> values = new ArrayList<Values>();
-        for (String col : columns.keySet()) {
+        Iterator<String> columnNames = columns.getColumnNames();
+        while(columnNames.hasNext()) {
+            String columnName = columnNames.next();
             if (this.isDrpc) {
-                values.add(new Values(input.getValue(0), rowKey, col));
+                values.add(new Values(input.getValue(0), rowKey, columnName));
             } else {
-                values.add(new Values(rowKey, col));
+                values.add(new Values(rowKey, columnName));
             }
         }
         return values;
     }
-
 }
