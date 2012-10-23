@@ -12,6 +12,7 @@ import me.prettyprint.cassandra.service.template.ThriftColumnFamilyTemplate;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
+import me.prettyprint.hector.api.beans.HColumn;
 import me.prettyprint.hector.api.factory.HFactory;
 import me.prettyprint.hector.api.mutation.Mutator;
 import backtype.storm.contrib.cassandra.bolt.mapper.Columns;
@@ -57,8 +58,9 @@ public class HectorClient<T> extends CassandraClient<T> {
     private void addTupleToMutation(Tuple input, String rowKey, Mutator<String> mutator, TupleMapper<T> tupleMapper) {
         Map<T, String> columns = tupleMapper.mapToColumns(input);
         for (Map.Entry<T, String> entry : columns.entrySet()) {
-            mutator.addInsertion(rowKey, tupleMapper.mapToColumnFamily(input),
-                    HFactory.createColumn(entry.getKey(), entry.getValue()));
+//            HColumn column = HFactory.createColumn(entry.getKey(), entry.getValue());
+            HColumn column = HFactory.createColumn(entry.getKey(), entry.getValue(), this.getColumnNameSerializer(), StringSerializer.get());            
+            mutator.addInsertion(rowKey, tupleMapper.mapToColumnFamily(input),column);                    
         }
     }
 
@@ -70,7 +72,6 @@ public class HectorClient<T> extends CassandraClient<T> {
             this.addTupleToMutation(input, rowKey, mutator, tupleMapper);
         }
         mutator.execute();
-
     }
 
     @SuppressWarnings("unchecked")

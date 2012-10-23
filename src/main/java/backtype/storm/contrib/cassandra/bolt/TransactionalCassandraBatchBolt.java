@@ -13,17 +13,22 @@ import backtype.storm.coordination.BatchOutputCollector;
 import backtype.storm.coordination.IBatchBolt;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.transactional.ICommitter;
 import backtype.storm.tuple.Tuple;
 
 @SuppressWarnings({ "serial", "rawtypes" })
-public class TransactionalCassandraBatchBolt<T> extends CassandraBatchingBolt<T> implements IBatchBolt {
+public class TransactionalCassandraBatchBolt<T> extends CassandraBatchingBolt<T> implements IBatchBolt, ICommitter {
     private static final Logger LOG = LoggerFactory.getLogger(TransactionalCassandraBatchBolt.class);
     private Object transactionId = null;
+
+    public TransactionalCassandraBatchBolt(TupleMapper<T> tupleMapper, Class columnNameClass) {
+        super(tupleMapper, columnNameClass);
+    }
 
     public TransactionalCassandraBatchBolt(TupleMapper<T> tupleMapper) {
         super(tupleMapper);
     }
-
+    
     @Override
     public void prepare(Map conf, TopologyContext context, BatchOutputCollector collector, Object id) {
         super.prepare(conf, context);
@@ -39,7 +44,7 @@ public class TransactionalCassandraBatchBolt<T> extends CassandraBatchingBolt<T>
 
     @Override
     public void execute(Tuple tuple) {
-        // LOG.debug("Executing tuple for [" + transactionId + "]");
+        LOG.debug("Executing tuple for [" + transactionId + "]");
         queue.add(tuple);        
     }
     

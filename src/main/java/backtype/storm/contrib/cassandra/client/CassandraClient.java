@@ -1,12 +1,13 @@
 package backtype.storm.contrib.cassandra.client;
 
+import java.io.Serializable;
 import java.util.List;
 
 import backtype.storm.contrib.cassandra.bolt.mapper.Columns;
 import backtype.storm.contrib.cassandra.bolt.mapper.TupleMapper;
 import backtype.storm.tuple.Tuple;
 
-public abstract class CassandraClient<T> {
+public abstract class CassandraClient<T> implements Serializable {
 
     private Class<T> columnNameClass;
 

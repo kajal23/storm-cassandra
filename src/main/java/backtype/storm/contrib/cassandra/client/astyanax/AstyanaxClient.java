@@ -1,5 +1,6 @@
 package backtype.storm.contrib.cassandra.client.astyanax;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
  * @author tgoetz
  * 
  */
-public class AstyanaxClient<T> extends CassandraClient<T> {
+public class AstyanaxClient<T> extends CassandraClient<T> implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(AstyanaxClient.class);
     private AstyanaxContext<Keyspace> astyanaxContext;
     protected Cluster cluster;
@@ -60,6 +61,7 @@ public class AstyanaxClient<T> extends CassandraClient<T> {
             this.astyanaxContext.start();
             this.keyspace = this.astyanaxContext.getEntity();
             // test the connection
+            LOG.info("Connecting to [" + cassandraHost + "]");
             this.keyspace.describeKeyspace();
         } catch (Throwable e) {
             LOG.warn("Astyanax initialization failed.", e);
@@ -131,7 +133,11 @@ public class AstyanaxClient<T> extends CassandraClient<T> {
                     StringSerializer.get(), this.getColumnNameSerializer(tupleMapper));
             this.addTupleToMutation(input, columnFamily, rowKey, mutation, tupleMapper);
         }
-        mutation.execute();
+        try {
+            mutation.execute();
+        } catch (Exception e) {
+            LOG.error("Could not execute mutation.", e);
+        }
     }
 
     private void addTupleToMutation(Tuple input, ColumnFamily<String, T> columnFamily, String rowKey,

@@ -46,7 +46,7 @@ public class CassandraLookupBolt<T> extends CassandraBolt<T> implements IBasicBo
         String columnFamily = tupleMapper.mapToColumnFamily(input);
         String rowKey = tupleMapper.mapToRowKey(input);
         try {
-            Columns<T> colMap = this.cassandraClient.lookup(columnFamily, rowKey);
+            Columns<T> colMap = getClient().lookup(columnFamily, rowKey);
             List<Values> valuesToEmit = columnsMapper.mapToValues(rowKey, colMap, input);
             for (Values values : valuesToEmit) {
                 collector.emit(values);
