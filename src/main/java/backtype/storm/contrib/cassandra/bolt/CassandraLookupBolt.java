@@ -30,6 +30,11 @@ public class CassandraLookupBolt<T> extends CassandraBolt<T> implements IBasicBo
     private static final Logger LOG = LoggerFactory.getLogger(CassandraLookupBolt.class);
     private ColumnsMapper<T> columnsMapper;
 
+    public CassandraLookupBolt(TupleMapper<T> tupleMapper, ColumnsMapper<T> columnsMapper,  Class columnNameClass) {
+        super(tupleMapper, columnNameClass);
+        this.columnsMapper = columnsMapper;
+    }
+
     public CassandraLookupBolt(TupleMapper<T> tupleMapper, ColumnsMapper<T> columnsMapper) {
         super(tupleMapper);
         this.columnsMapper = columnsMapper;

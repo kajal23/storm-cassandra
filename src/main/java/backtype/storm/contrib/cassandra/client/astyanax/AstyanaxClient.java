@@ -29,9 +29,9 @@ import com.netflix.astyanax.serializers.StringSerializer;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 
 /**
- * 
+ *
  * @author tgoetz
- * 
+ *
  */
 public class AstyanaxClient<T> extends CassandraClient<T> implements Serializable {
     private static final Logger LOG = LoggerFactory.getLogger(AstyanaxClient.class);
@@ -41,7 +41,7 @@ public class AstyanaxClient<T> extends CassandraClient<T> implements Serializabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * backtype.storm.contrib.cassandra.client.CassandraClient#start(java.lang
      * .String, java.lang.String)
@@ -71,7 +71,7 @@ public class AstyanaxClient<T> extends CassandraClient<T> implements Serializabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see backtype.storm.contrib.cassandra.client.CassandraClient#stop()
      */
     @Override
@@ -81,7 +81,7 @@ public class AstyanaxClient<T> extends CassandraClient<T> implements Serializabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * backtype.storm.contrib.cassandra.client.CassandraClient#lookup(java.lang
      * .String, java.lang.String)
@@ -89,9 +89,9 @@ public class AstyanaxClient<T> extends CassandraClient<T> implements Serializabl
     @SuppressWarnings("unchecked")
     @Override
     public Columns<T> lookup(String columnFamilyName, String rowKey) throws Exception {
-        ColumnFamily<String, String> columnFamily = new ColumnFamily<String, String>(columnFamilyName,
-                StringSerializer.get(), StringSerializer.get());
-        OperationResult<ColumnList<String>> result;
+        ColumnFamily<String, T> columnFamily = new ColumnFamily<String, T>(columnFamilyName,
+                StringSerializer.get(), getColumnNameSerializer());
+        OperationResult<ColumnList<T>> result;
         result = this.keyspace.prepareQuery(columnFamily).getKey(rowKey).execute();
         ColumnList<T> columns = (ColumnList<T>) result.getResult();
         return new AstyanaxColumns<T>(columns);
@@ -99,7 +99,7 @@ public class AstyanaxClient<T> extends CassandraClient<T> implements Serializabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * backtype.storm.contrib.cassandra.client.CassandraClient#writeTuple(backtype
      * .storm.tuple.Tuple,
@@ -118,7 +118,7 @@ public class AstyanaxClient<T> extends CassandraClient<T> implements Serializabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * backtype.storm.contrib.cassandra.client.CassandraClient#writeTuples(java
      * .util.List, backtype.storm.contrib.cassandra.bolt.mapper.TupleMapper)
@@ -154,6 +154,15 @@ public class AstyanaxClient<T> extends CassandraClient<T> implements Serializabl
             return (Serializer<T>) StringSerializer.get();
         } else {
             // TODO: Cache this instance.
+            return new AnnotatedCompositeSerializer<T>(this.getColumnNameClass());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Serializer<T> getColumnNameSerializer() {
+        if (this.getColumnNameClass().equals(String.class)) {
+            return (Serializer<T>) StringSerializer.get();
+        } else {
             return new AnnotatedCompositeSerializer<T>(this.getColumnNameClass());
         }
     }
